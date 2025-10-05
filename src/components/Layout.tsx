@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, CheckSquare, StickyNote, Target, User, Settings, BarChart3, Calendar } from "lucide-react";
+import { LayoutDashboard, CheckSquare, StickyNote, Target, User, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LayoutProps {
@@ -12,8 +12,6 @@ const navigation = [
   { name: "Tasks", href: "/tasks", icon: CheckSquare },
   { name: "Habits", href: "/habits", icon: Target },
   { name: "Notes", href: "/notes", icon: StickyNote },
-  { name: "Calendar", href: "/calendar", icon: Calendar },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Profile", href: "/profile", icon: User },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
