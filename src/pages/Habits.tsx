@@ -4,14 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Flame, Check, Trash2 } from "lucide-react";
+import { Plus, Flame, Check, Trash2, Pencil } from "lucide-react";
 import { Habit } from "@/types";
 import { STORAGE_KEYS, addXP, XP_REWARDS } from "@/lib/gameLogic";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Habits() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [newHabit, setNewHabit] = useState({
     title: "",
     description: "",
@@ -88,6 +90,24 @@ export default function Habits() {
     toast.info("Habit deleted");
   };
 
+  const startEdit = (habit: Habit) => {
+    setEditingHabit(habit);
+  };
+
+  const handleUpdateHabit = () => {
+    if (!editingHabit || !editingHabit.title.trim()) {
+      toast.error("Habit title is required!");
+      return;
+    }
+
+    const updatedHabits = habits.map((habit) =>
+      habit.id === editingHabit.id ? editingHabit : habit
+    );
+    saveHabits(updatedHabits);
+    setEditingHabit(null);
+    toast.success("Habit updated successfully");
+  };
+
   return (
     <Layout>
       <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
@@ -153,14 +173,24 @@ export default function Habits() {
                         <p className="text-sm text-muted-foreground mt-1">{habit.description}</p>
                       )}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteHabit(habit.id)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => startEdit(habit)}
+                        className="text-primary hover:text-primary hover:bg-primary/10"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteHabit(habit.id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Streak Display */}
@@ -194,6 +224,35 @@ export default function Habits() {
             })
           )}
         </div>
+
+        {/* Edit Habit Dialog */}
+        <Dialog open={!!editingHabit} onOpenChange={(open) => !open && setEditingHabit(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Habit</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                placeholder="Habit title"
+                value={editingHabit?.title || ""}
+                onChange={(e) => setEditingHabit(editingHabit ? { ...editingHabit, title: e.target.value } : null)}
+              />
+              <Textarea
+                placeholder="Description"
+                value={editingHabit?.description || ""}
+                onChange={(e) => setEditingHabit(editingHabit ? { ...editingHabit, description: e.target.value } : null)}
+              />
+              <div className="flex gap-2">
+                <Button onClick={handleUpdateHabit} className="flex-1">
+                  Update Habit
+                </Button>
+                <Button variant="outline" onClick={() => setEditingHabit(null)} className="flex-1">
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );

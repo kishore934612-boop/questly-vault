@@ -4,14 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Pin, Trash2 } from "lucide-react";
+import { Plus, Pin, Trash2, Pencil } from "lucide-react";
 import { Note } from "@/types";
 import { STORAGE_KEYS, addXP, XP_REWARDS } from "@/lib/gameLogic";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Notes() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [newNote, setNewNote] = useState({
     title: "",
     content: "",
@@ -61,6 +63,26 @@ export default function Notes() {
   const deleteNote = (id: string) => {
     saveNotes(notes.filter(n => n.id !== id));
     toast.info("Note deleted");
+  };
+
+  const startEdit = (note: Note) => {
+    setEditingNote(note);
+  };
+
+  const handleUpdateNote = () => {
+    if (!editingNote || !editingNote.title.trim()) {
+      toast.error("Note title is required!");
+      return;
+    }
+
+    const updatedNotes = notes.map((note) =>
+      note.id === editingNote.id 
+        ? { ...editingNote, updatedAt: new Date().toISOString() }
+        : note
+    );
+    saveNotes(updatedNotes);
+    setEditingNote(null);
+    toast.success("Note updated successfully");
   };
 
   const sortedNotes = [...notes].sort((a, b) => {
@@ -140,6 +162,14 @@ export default function Notes() {
                     <Button
                       variant="ghost"
                       size="sm"
+                      onClick={() => startEdit(note)}
+                      className="text-primary hover:text-primary hover:bg-primary/10"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => deleteNote(note.id)}
                       className="text-destructive hover:text-destructive hover:bg-destructive/10"
                     >
@@ -157,6 +187,36 @@ export default function Notes() {
             ))
           )}
         </div>
+
+        {/* Edit Note Dialog */}
+        <Dialog open={!!editingNote} onOpenChange={(open) => !open && setEditingNote(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Note</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                placeholder="Note title"
+                value={editingNote?.title || ""}
+                onChange={(e) => setEditingNote(editingNote ? { ...editingNote, title: e.target.value } : null)}
+              />
+              <Textarea
+                placeholder="Content"
+                value={editingNote?.content || ""}
+                onChange={(e) => setEditingNote(editingNote ? { ...editingNote, content: e.target.value } : null)}
+                rows={8}
+              />
+              <div className="flex gap-2">
+                <Button onClick={handleUpdateNote} className="flex-1">
+                  Update Note
+                </Button>
+                <Button variant="outline" onClick={() => setEditingNote(null)} className="flex-1">
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );

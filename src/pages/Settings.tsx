@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Bell, Palette, LogOut, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -19,33 +19,66 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function Settings() {
-  const [pushEnabled, setPushEnabled] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState("dark");
+  const [pushEnabled, setPushEnabled] = useState(() => {
+    const saved = localStorage.getItem("pushNotifications");
+    return saved ? JSON.parse(saved) : false;
+  });
+  
+  const [selectedTheme, setSelectedTheme] = useState(() => {
+    return localStorage.getItem("selectedTheme") || "dark";
+  });
 
   const themes = [
-    { id: "dark", name: "Dark Gaming", color: "hsl(263 70% 50%)" },
-    { id: "blue", name: "Ocean Blue", color: "hsl(217 91% 60%)" },
-    { id: "purple", name: "Purple Haze", color: "hsl(280 70% 50%)" },
-    { id: "gold", name: "Golden Quest", color: "hsl(45 100% 51%)" },
+    { id: "dark", name: "Dark Gaming", primary: "263 70% 50%", secondary: "217 91% 60%" },
+    { id: "blue", name: "Ocean Blue", primary: "217 91% 60%", secondary: "200 80% 55%" },
+    { id: "purple", name: "Purple Haze", primary: "280 70% 50%", secondary: "300 65% 55%" },
+    { id: "gold", name: "Golden Quest", primary: "45 100% 51%", secondary: "35 100% 55%" },
   ];
 
   const handlePushToggle = () => {
-    setPushEnabled(!pushEnabled);
-    toast.success(pushEnabled ? "Push notifications disabled" : "Push notifications enabled");
+    const newValue = !pushEnabled;
+    setPushEnabled(newValue);
+    localStorage.setItem("pushNotifications", JSON.stringify(newValue));
+    toast.success(newValue ? "Push notifications enabled" : "Push notifications disabled");
   };
 
   const handleThemeChange = (themeId: string) => {
     setSelectedTheme(themeId);
-    toast.success(`Theme changed to ${themes.find(t => t.id === themeId)?.name}`);
+    localStorage.setItem("selectedTheme", themeId);
+    
+    const theme = themes.find(t => t.id === themeId);
+    if (theme) {
+      document.documentElement.style.setProperty("--primary", theme.primary);
+      document.documentElement.style.setProperty("--secondary", theme.secondary);
+      document.documentElement.style.setProperty("--level-purple", theme.primary);
+      toast.success(`Theme changed to ${theme.name}`);
+    }
   };
 
   const handleSignOut = () => {
+    localStorage.removeItem("playerData");
+    localStorage.removeItem("tasks");
+    localStorage.removeItem("habits");
+    localStorage.removeItem("notes");
     toast.success("Signed out successfully");
+    setTimeout(() => window.location.reload(), 1000);
   };
 
   const handleDeleteAccount = () => {
-    toast.error("Account deleted");
+    localStorage.clear();
+    toast.error("Account deleted - all data cleared");
+    setTimeout(() => window.location.reload(), 1500);
   };
+
+  // Apply saved theme on mount
+  useEffect(() => {
+    const theme = themes.find(t => t.id === selectedTheme);
+    if (theme) {
+      document.documentElement.style.setProperty("--primary", theme.primary);
+      document.documentElement.style.setProperty("--secondary", theme.secondary);
+      document.documentElement.style.setProperty("--level-purple", theme.primary);
+    }
+  }, []);
 
   return (
     <Layout>
@@ -114,7 +147,7 @@ export default function Settings() {
                   <div className="flex items-center gap-3">
                     <div
                       className="w-8 h-8 rounded-full"
-                      style={{ backgroundColor: theme.color }}
+                      style={{ backgroundColor: `hsl(${theme.primary})` }}
                     />
                     <span className="font-medium">{theme.name}</span>
                   </div>

@@ -5,14 +5,16 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Check, Trash2, Calendar } from "lucide-react";
+import { Plus, Check, Trash2, Calendar, Pencil } from "lucide-react";
 import { Task } from "@/types";
 import { STORAGE_KEYS, addXP, XP_REWARDS } from "@/lib/gameLogic";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -72,6 +74,24 @@ export default function Tasks() {
   const deleteTask = (id: string) => {
     saveTasks(tasks.filter(t => t.id !== id));
     toast.info("Task deleted");
+  };
+
+  const startEdit = (task: Task) => {
+    setEditingTask(task);
+  };
+
+  const handleUpdateTask = () => {
+    if (!editingTask || !editingTask.title.trim()) {
+      toast.error("Task title is required!");
+      return;
+    }
+
+    const updatedTasks = tasks.map((task) =>
+      task.id === editingTask.id ? editingTask : task
+    );
+    saveTasks(updatedTasks);
+    setEditingTask(null);
+    toast.success("Task updated successfully");
   };
 
   const priorityColors = {
@@ -187,19 +207,83 @@ export default function Tasks() {
                       <span className="capitalize">{task.priority} priority</span>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteTask(task.id)}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => startEdit(task)}
+                      className="text-primary hover:text-primary hover:bg-primary/10"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteTask(task.id)}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))
           )}
         </div>
+
+        {/* Edit Task Dialog */}
+        <Dialog open={!!editingTask} onOpenChange={(open) => !open && setEditingTask(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Task</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                placeholder="Task title"
+                value={editingTask?.title || ""}
+                onChange={(e) => setEditingTask(editingTask ? { ...editingTask, title: e.target.value } : null)}
+              />
+              <Textarea
+                placeholder="Description"
+                value={editingTask?.description || ""}
+                onChange={(e) => setEditingTask(editingTask ? { ...editingTask, description: e.target.value } : null)}
+              />
+              <Select
+                value={editingTask?.priority || "medium"}
+                onValueChange={(value: Task["priority"]) =>
+                  setEditingTask(editingTask ? { ...editingTask, priority: value } : null)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                placeholder="Category"
+                value={editingTask?.category || ""}
+                onChange={(e) => setEditingTask(editingTask ? { ...editingTask, category: e.target.value } : null)}
+              />
+              <Input
+                type="date"
+                value={editingTask?.dueDate || ""}
+                onChange={(e) => setEditingTask(editingTask ? { ...editingTask, dueDate: e.target.value } : null)}
+              />
+              <div className="flex gap-2">
+                <Button onClick={handleUpdateTask} className="flex-1">
+                  Update Task
+                </Button>
+                <Button variant="outline" onClick={() => setEditingTask(null)} className="flex-1">
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
