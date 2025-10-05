@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
-import CharacterAvatar from "@/components/CharacterAvatar";
-import XPBar from "@/components/XPBar";
 import StatCard from "@/components/StatCard";
 import { CheckSquare, Target, Flame, Trophy } from "lucide-react";
-import { getPlayerData, calculateXPForNextLevel, calculateCurrentLevelXP, getLevelTitle, STORAGE_KEYS } from "@/lib/gameLogic";
+import { getPlayerData, getLevelTitle, STORAGE_KEYS } from "@/lib/gameLogic";
 import { Task, Habit } from "@/types";
 
 export default function Dashboard() {
@@ -31,9 +29,6 @@ export default function Dashboard() {
     });
   }, []);
 
-  const currentLevelXP = calculateCurrentLevelXP(player.totalXP, player.level);
-  const maxXP = calculateXPForNextLevel(player.level);
-
   return (
     <Layout>
       <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
@@ -49,23 +44,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Character & XP Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 flex flex-col items-center justify-center bg-gradient-card border border-border rounded-2xl p-8 shadow-card">
-            <CharacterAvatar level={player.level} characterType={player.characterType} />
-            <div className="mt-6 w-full">
-              <XPBar currentXP={currentLevelXP} maxXP={maxXP} level={player.level} />
-            </div>
-            <div className="mt-4 text-center">
-              <p className="text-2xl font-bold text-xp">{player.totalXP} Total XP</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {maxXP - currentLevelXP} XP to Level {player.level + 1}
-              </p>
-            </div>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <StatCard
               title="Tasks Completed"
               value={stats.tasksCompleted}
@@ -94,7 +74,6 @@ export default function Dashboard() {
               color="xp"
               trend={getLevelTitle(player.level)}
             />
-          </div>
         </div>
 
         {/* Quick Actions */}
