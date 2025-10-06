@@ -7,6 +7,11 @@ export interface Task {
   dueDate: string;
   completed: boolean;
   createdAt: string;
+  recurring?: {
+    enabled: boolean;
+    frequency: "daily" | "weekly" | "monthly";
+    endDate?: string;
+  };
 }
 
 export interface Habit {

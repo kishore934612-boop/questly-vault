@@ -8,6 +8,7 @@ import Tasks from "./pages/Tasks";
 import Habits from "./pages/Habits";
 import Notes from "./pages/Notes";
 import Calendar from "./pages/Calendar";
+import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/habits" element={<Habits />} />
           <Route path="/notes" element={<Notes />} />
           <Route path="/calendar" element={<Calendar />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

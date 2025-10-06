@@ -5,10 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Check, Trash2, Calendar, Pencil } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Check, Trash2, Calendar, Pencil, Repeat } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Task } from "@/types";
-import { STORAGE_KEYS, addXP, XP_REWARDS } from "@/lib/gameLogic";
+import { STORAGE_KEYS, addXP, getXPRewards, getCustomCategories } from "@/lib/gameLogic";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -16,12 +17,18 @@ export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [categories] = useState(getCustomCategories());
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     priority: "medium" as Task["priority"],
     category: "",
     dueDate: "",
+    recurring: {
+      enabled: false,
+      frequency: "daily" as "daily" | "weekly" | "monthly",
+      endDate: "",
+    },
   });
 
   useEffect(() => {
@@ -44,19 +51,32 @@ export default function Tasks() {
 
     const task: Task = {
       id: Date.now().toString(),
-      ...newTask,
+      title: newTask.title,
+      description: newTask.description,
+      priority: newTask.priority,
+      category: newTask.category,
+      dueDate: newTask.dueDate,
       completed: false,
       createdAt: new Date().toISOString(),
+      recurring: newTask.recurring.enabled ? newTask.recurring : undefined,
     };
 
     saveTasks([...tasks, task]);
-    setNewTask({ title: "", description: "", priority: "medium", category: "", dueDate: "" });
+    setNewTask({ 
+      title: "", 
+      description: "", 
+      priority: "medium", 
+      category: "", 
+      dueDate: "",
+      recurring: { enabled: false, frequency: "daily", endDate: "" }
+    });
     setIsAdding(false);
     toast.success("Task created! +10 XP");
     addXP(10);
   };
 
   const toggleComplete = (id: string) => {
+    const XP_REWARDS = getXPRewards();
     const updatedTasks = tasks.map(task => {
       if (task.id === id) {
         if (!task.completed) {
@@ -165,12 +185,64 @@ export default function Tasks() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="task-category">Category</Label>
-                <Input
-                  id="task-category"
-                  placeholder="e.g., Work, Personal, Study"
-                  value={newTask.category}
-                  onChange={(e) => setNewTask({ ...newTask, category: e.target.value })}
-                />
+                <Select value={newTask.category} onValueChange={(v) => setNewTask({ ...newTask, category: v })}>
+                  <SelectTrigger id="task-category">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-3 p-4 border border-border rounded-lg">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="recurring" className="flex items-center gap-2">
+                    <Repeat className="w-4 h-4" />
+                    Recurring Task
+                  </Label>
+                  <Switch
+                    id="recurring"
+                    checked={newTask.recurring.enabled}
+                    onCheckedChange={(checked) =>
+                      setNewTask({ ...newTask, recurring: { ...newTask.recurring, enabled: checked } })
+                    }
+                  />
+                </div>
+                {newTask.recurring.enabled && (
+                  <div className="space-y-3 pt-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="frequency">Frequency</Label>
+                      <Select
+                        value={newTask.recurring.frequency}
+                        onValueChange={(v: "daily" | "weekly" | "monthly") =>
+                          setNewTask({ ...newTask, recurring: { ...newTask.recurring, frequency: v } })
+                        }
+                      >
+                        <SelectTrigger id="frequency">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="daily">Daily</SelectItem>
+                          <SelectItem value="weekly">Weekly</SelectItem>
+                          <SelectItem value="monthly">Monthly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="end-date">End Date (Optional)</Label>
+                      <Input
+                        id="end-date"
+                        type="date"
+                        value={newTask.recurring.endDate}
+                        onChange={(e) =>
+                          setNewTask({ ...newTask, recurring: { ...newTask.recurring, endDate: e.target.value } })
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex gap-2 pt-2">
                 <Button onClick={handleAddTask} className="flex-1 bg-success hover:bg-success/90">
@@ -225,6 +297,12 @@ export default function Tasks() {
                         </span>
                       )}
                       <span className="capitalize">{task.priority} priority</span>
+                      {task.recurring?.enabled && (
+                        <span className="flex items-center gap-1 px-2 py-1 bg-primary/20 text-primary rounded">
+                          <Repeat className="w-3 h-3" />
+                          {task.recurring.frequency}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-1">

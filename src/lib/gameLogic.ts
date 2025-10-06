@@ -14,13 +14,25 @@ export const calculateCurrentLevelXP = (totalXP: number, level: number): number 
 };
 
 // XP rewards
-export const XP_REWARDS = {
-  TASK_COMPLETE: 50,
-  HABIT_COMPLETE: 30,
-  NOTE_CREATE: 10,
-  DAILY_LOGIN: 20,
-  STREAK_BONUS: 25,
-} as const;
+export const getXPRewards = () => {
+  const stored = localStorage.getItem("xp_rewards");
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  return {
+    TASK_COMPLETE: 50,
+    HABIT_COMPLETE: 30,
+    NOTE_CREATE: 10,
+    DAILY_LOGIN: 20,
+    STREAK_BONUS: 25,
+  };
+};
+
+export const saveXPRewards = (rewards: Record<string, number>) => {
+  localStorage.setItem("xp_rewards", JSON.stringify(rewards));
+};
+
+export const XP_REWARDS = getXPRewards();
 
 // Level titles
 export const getLevelTitle = (level: number): string => {
@@ -40,6 +52,16 @@ export const CHARACTER_TYPES = [
   { id: "scholar", name: "Scholar", emoji: "📚", description: "Learn and grow daily" },
   { id: "builder", name: "Builder", emoji: "🛠️", description: "Build lasting habits" },
 ];
+
+// Get custom categories
+export const getCustomCategories = (): string[] => {
+  const stored = localStorage.getItem("custom_categories");
+  return stored ? JSON.parse(stored) : ["Work", "Personal", "Health", "Learning"];
+};
+
+export const saveCustomCategories = (categories: string[]) => {
+  localStorage.setItem("custom_categories", JSON.stringify(categories));
+};
 
 // Local storage keys
 export const STORAGE_KEYS = {

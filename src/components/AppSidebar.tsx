@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, CheckSquare, StickyNote, Target, Calendar, User, Settings } from "lucide-react";
+import { LayoutDashboard, CheckSquare, StickyNote, Target, Calendar, BarChart3, User, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +20,7 @@ const navigation = [
   { name: "Habits", href: "/habits", icon: Target },
   { name: "Notes", href: "/notes", icon: StickyNote },
   { name: "Calendar", href: "/calendar", icon: Calendar },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Profile", href: "/profile", icon: User },
   { name: "Settings", href: "/settings", icon: Settings },
 ];

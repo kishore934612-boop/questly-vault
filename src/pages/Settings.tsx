@@ -3,9 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Bell, Palette, LogOut, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Bell, Palette, LogOut, Trash2, Award, Plus, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { getXPRewards, saveXPRewards, getCustomCategories, saveCustomCategories } from "@/lib/gameLogic";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +29,10 @@ export default function Settings() {
   const [selectedTheme, setSelectedTheme] = useState(() => {
     return localStorage.getItem("selectedTheme") || "dark";
   });
+
+  const [xpRewards, setXpRewards] = useState(getXPRewards());
+  const [categories, setCategories] = useState(getCustomCategories());
+  const [newCategory, setNewCategory] = useState("");
 
   const themes = [
     { id: "dark", name: "Dark Gaming", primary: "263 70% 50%", secondary: "217 91% 60%" },
@@ -68,6 +74,31 @@ export default function Settings() {
     localStorage.clear();
     toast.error("Account deleted - all data cleared");
     setTimeout(() => window.location.reload(), 1500);
+  };
+
+  const handleXPChange = (key: string, value: string) => {
+    const numValue = parseInt(value) || 0;
+    const updated = { ...xpRewards, [key]: numValue };
+    setXpRewards(updated);
+    saveXPRewards(updated);
+    toast.success("XP rewards updated");
+  };
+
+  const handleAddCategory = () => {
+    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
+      const updated = [...categories, newCategory.trim()];
+      setCategories(updated);
+      saveCustomCategories(updated);
+      setNewCategory("");
+      toast.success("Category added");
+    }
+  };
+
+  const handleRemoveCategory = (category: string) => {
+    const updated = categories.filter(c => c !== category);
+    setCategories(updated);
+    saveCustomCategories(updated);
+    toast.success("Category removed");
   };
 
   // Apply saved theme on mount
@@ -152,6 +183,102 @@ export default function Settings() {
                     <span className="font-medium">{theme.name}</span>
                   </div>
                 </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* XP Rewards */}
+        <Card className="bg-gradient-card border-border shadow-card">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-muted text-xp-gold">
+                <Award className="w-5 h-5" />
+              </div>
+              <div>
+                <CardTitle>XP Rewards</CardTitle>
+                <CardDescription>Customize your experience points</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="task-xp">Task Completion</Label>
+                <Input
+                  id="task-xp"
+                  type="number"
+                  className="w-20"
+                  value={xpRewards.TASK_COMPLETE}
+                  onChange={(e) => handleXPChange("TASK_COMPLETE", e.target.value)}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="habit-xp">Habit Completion</Label>
+                <Input
+                  id="habit-xp"
+                  type="number"
+                  className="w-20"
+                  value={xpRewards.HABIT_COMPLETE}
+                  onChange={(e) => handleXPChange("HABIT_COMPLETE", e.target.value)}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="note-xp">Note Creation</Label>
+                <Input
+                  id="note-xp"
+                  type="number"
+                  className="w-20"
+                  value={xpRewards.NOTE_CREATE}
+                  onChange={(e) => handleXPChange("NOTE_CREATE", e.target.value)}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="streak-xp">Streak Bonus</Label>
+                <Input
+                  id="streak-xp"
+                  type="number"
+                  className="w-20"
+                  value={xpRewards.STREAK_BONUS}
+                  onChange={(e) => handleXPChange("STREAK_BONUS", e.target.value)}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Custom Categories */}
+        <Card className="bg-gradient-card border-border shadow-card">
+          <CardHeader>
+            <CardTitle>Custom Categories</CardTitle>
+            <CardDescription>Organize your tasks with custom categories</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="New category name"
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleAddCategory()}
+              />
+              <Button onClick={handleAddCategory} size="icon">
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => (
+                <div
+                  key={cat}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg"
+                >
+                  <span className="text-sm">{cat}</span>
+                  <button
+                    onClick={() => handleRemoveCategory(cat)}
+                    className="hover:text-destructive transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
               ))}
             </div>
           </CardContent>
