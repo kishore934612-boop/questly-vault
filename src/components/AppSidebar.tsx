@@ -11,7 +11,6 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from "@/components/ui/sidebar";
-import CharacterAvatar from "@/components/CharacterAvatar";
 import XPBar from "@/components/XPBar";
 import { getPlayerData, calculateXPForNextLevel, calculateCurrentLevelXP } from "@/lib/gameLogic";
 
@@ -72,26 +71,17 @@ export function AppSidebar() {
           )}
         </div>
 
-        {/* XP Card */}
+        {/* XP Progress */}
         <div className="p-4 border-b border-border">
-          <div className="flex flex-col items-center justify-center bg-gradient-card border border-border rounded-xl p-4 shadow-card">
-            <CharacterAvatar 
-              level={player.level} 
-              characterType={player.characterType}
-              size={collapsed ? "sm" : "md"}
-            />
+          <div className="bg-gradient-card border border-border rounded-xl p-4 shadow-card">
+            <XPBar currentXP={currentLevelXP} maxXP={maxXP} level={player.level} />
             {!collapsed && (
-              <>
-                <div className="mt-4 w-full">
-                  <XPBar currentXP={currentLevelXP} maxXP={maxXP} level={player.level} />
-                </div>
-                <div className="mt-3 text-center">
-                  <p className="text-lg font-bold text-xp">{player.totalXP} XP</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {maxXP - currentLevelXP} to Level {player.level + 1}
-                  </p>
-                </div>
-              </>
+              <div className="mt-3 text-center">
+                <p className="text-lg font-bold text-xp">{player.totalXP} XP</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {maxXP - currentLevelXP} to Level {player.level + 1}
+                </p>
+              </div>
             )}
           </div>
         </div>

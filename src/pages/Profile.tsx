@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CharacterAvatar from "@/components/CharacterAvatar";
-import { getPlayerData, CHARACTER_TYPES, getLevelTitle, STORAGE_KEYS } from "@/lib/gameLogic";
+import XPBar from "@/components/XPBar";
+import { getPlayerData, CHARACTER_TYPES, getLevelTitle, STORAGE_KEYS, calculateXPForNextLevel, calculateCurrentLevelXP } from "@/lib/gameLogic";
 import { toast } from "sonner";
 
 export default function Profile() {
@@ -39,10 +40,17 @@ export default function Profile() {
         <Card className="p-8 bg-gradient-card border-border shadow-card">
           <div className="flex flex-col items-center gap-6">
             <CharacterAvatar level={player.level} characterType={player.characterType} />
-            <div className="text-center">
+            <div className="text-center w-full max-w-md">
               <h2 className="text-2xl font-bold text-foreground">{player.username}</h2>
               <p className="text-lg text-primary font-semibold">{getLevelTitle(player.level)}</p>
               <p className="text-muted-foreground mt-2">Total XP: {player.totalXP}</p>
+              <div className="mt-4">
+                <XPBar 
+                  currentXP={calculateCurrentLevelXP(player.totalXP, player.level)} 
+                  maxXP={calculateXPForNextLevel(player.level)} 
+                  level={player.level} 
+                />
+              </div>
             </div>
           </div>
         </Card>

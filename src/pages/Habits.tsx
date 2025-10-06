@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Flame, Check, Trash2, Pencil } from "lucide-react";
+import { Label } from "@/components/ui/label";
 import { Habit } from "@/types";
 import { STORAGE_KEYS, addXP, XP_REWARDS } from "@/lib/gameLogic";
 import { toast } from "sonner";
@@ -126,19 +127,27 @@ export default function Habits() {
         {/* Add Habit Form */}
         {isAdding && (
           <Card className="p-6 bg-gradient-card border-border shadow-card animate-scale-in">
-            <h3 className="text-lg font-semibold mb-4">Create New Habit</h3>
-            <div className="space-y-4">
-              <Input
-                placeholder="Habit title (e.g., Morning workout)"
-                value={newHabit.title}
-                onChange={(e) => setNewHabit({ ...newHabit, title: e.target.value })}
-              />
-              <Textarea
-                placeholder="Why is this important to you?"
-                value={newHabit.description}
-                onChange={(e) => setNewHabit({ ...newHabit, description: e.target.value })}
-              />
-              <div className="flex gap-2">
+            <h3 className="text-lg font-semibold mb-6">Create New Habit</h3>
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="habit-title">Habit Title *</Label>
+                <Input
+                  id="habit-title"
+                  placeholder="e.g., Morning workout, Read for 30 minutes"
+                  value={newHabit.title}
+                  onChange={(e) => setNewHabit({ ...newHabit, title: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="habit-description">Why This Matters</Label>
+                <Textarea
+                  id="habit-description"
+                  placeholder="Describe why this habit is important to you..."
+                  value={newHabit.description}
+                  onChange={(e) => setNewHabit({ ...newHabit, description: e.target.value })}
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
                 <Button onClick={handleAddHabit} className="flex-1 bg-success hover:bg-success/90">
                   Start Habit
                 </Button>
